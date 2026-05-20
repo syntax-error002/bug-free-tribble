@@ -15,6 +15,9 @@
 
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ── ROOT ── */
@@ -42,6 +45,8 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  width: 100%;
+  max-width: 100%;
 }
 
 a {
@@ -174,6 +179,9 @@ em {
 /* ─────────────────────────────────────────────────────────────────────────── */
 .vsk-root {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -187,6 +195,8 @@ em {
   position: relative;
   overflow: hidden;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
 }
 
 .hero-bg-orbs {
@@ -2248,8 +2258,21 @@ em {
 /*  RESPONSIVE                                                                  */
 /* ─────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
+  /* ── FULL-WIDTH VIEWPORT RESETS ── */
+  html, body, #root, .vsk-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body {
+    /* Restore the background, lost when padding overridden above */
+    padding: 0 !important;
+  }
+
   .vsk-nav { padding: 0 24px; }
-  .vsk-nav-links, .vsk-nav-cta { display: none; }
+  .vsk-nav-links, .vsk-nav-cta, .vsk-nav-actions { display: none !important; }
   .vsk-hamburger { display: block; }
   .vsk-mobile-menu { padding: 24px; }
 
@@ -2268,6 +2291,12 @@ em {
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 100px;
     padding: 16px 24px;
+    transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+  }
+  .hero-waitlist-input:focus {
+    border-color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
   }
   .hero-waitlist-btn {
     width: 100%;
@@ -2302,11 +2331,60 @@ em {
 }
 
 @media (max-width: 480px) {
-  .vsk-hero-h1 { font-size: clamp(2.4rem, 9vw, 3.5rem); }
+  /* Spacing Adjustments */
+  .hero-content-wrap { padding: 80px 16px 40px; }
+  .bento10-outer-section { padding: 40px 12px; }
+  .bento10-card-panel { padding: 32px 16px; border-radius: 20px; }
+  .team-section { padding: 40px 16px; }
+  .services-section { padding: 40px 16px; }
+  .premium-section { padding: 40px 16px; }
+  .footer-cta-section { padding: 40px 16px; }
+  .footer-bottom { padding: 40px 16px; }
+  .vsk-footer { padding: 0 16px; }
+
+  /* Hero Elements */
+  .vsk-hero-h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+  .hero-avatars {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .hero-avatars-text {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* Bento Grid Tiles */
+  .bento10-tile { padding: 24px 16px; }
+  .tile-orange-stat { font-size: clamp(2.5rem, 10vw, 4.5rem); }
+  .tile-green-inner-card { padding: 12px 16px; }
+  .tile-white-stat, .tile-pink-stat { font-size: 3rem; }
+
+  /* Premium and Stats Grid */
   .premium-grid { grid-template-columns: 1fr; }
   .stats-strip { grid-template-columns: repeat(2, 1fr); }
   .team-grid { grid-template-columns: 1fr; }
   .testimonials-inner { padding: 28px 20px; }
+}
+
+@media (max-width: 600px) {
+  .team-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+  }
+  .team-name {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+  }
+  .team-social-btn {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
