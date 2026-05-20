@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import './App.css'
+import LoadingScreen from './LoadingScreen'
 
 // In dev, Vite proxies /api → localhost:3001. In prod, set VITE_API_URL to your server.
 const API_URL = import.meta.env.VITE_API_URL ?? ''
@@ -928,7 +929,8 @@ function UserDashboardModal({ isOpen, onClose, user, onRefresh, onLogout }) {
 /*  APP                                                                         */
 /* ─────────────────────────────────────────────────────────────────────────── */
 export default function App() {
-  const [userSession, setUserSession] = useState(null)
+  const [isLoading, setIsLoading]       = useState(true)
+  const [userSession, setUserSession]   = useState(null)
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isDashboardOpen, setIsDashboardOpen] = useState(false)
 
@@ -1001,7 +1003,9 @@ export default function App() {
   }
 
   return (
-    <div className="vsk-root">
+    <>
+      {isLoading && <LoadingScreen onDone={() => setIsLoading(false)} />}
+      <div className="vsk-root" style={ isLoading ? { visibility: 'hidden' } : undefined }>
 
       {/* ── NAVBAR ── */}
       <Navbar 
@@ -1132,5 +1136,6 @@ export default function App() {
       />
 
     </div>
+    </>
   )
 }
