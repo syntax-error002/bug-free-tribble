@@ -1,132 +1,103 @@
 import React, { useState, useEffect } from 'react'
 import './LoadingScreen.css'
 
-/* ── 3 LOADING STEPS ── */
 const STEPS = [
-  { id: 'connect',   icon: '⚡', label: 'Initialising' },
-  { id: 'builders',  icon: '🚀', label: 'Loading Platform' },
-  { id: 'launch',    icon: '✦',  label: 'Almost Ready' },
+  { num: '01', text: 'Initialising' },
+  { num: '02', text: 'Loading modules' },
+  { num: '03', text: 'Ready' },
 ]
 
-/* timing (ms) when each step becomes active */
-const STEP_TIMINGS = [0, 900, 1800]
-/* total duration before exit */
-const TOTAL_MS = 2900
-/* progress % at each milestone */
-const PROGRESS_AT = [8, 48, 88, 100]
+/* ms when each step becomes active */
+const TIMINGS    = [0, 850, 1750]
+const TOTAL_MS   = 2600
+const PCT_AT     = [12, 52, 88, 100]
 
 export default function LoadingScreen({ onDone }) {
-  const [activeStep, setActiveStep] = useState(0)   // 0‑based index of active step
-  const [doneSteps,  setDoneSteps]  = useState([])  // indices of completed steps
-  const [progress,   setProgress]   = useState(0)
-  const [exiting,    setExiting]    = useState(false)
-  const [statusText, setStatusText] = useState('Connecting...')
-
-  /* ── STATUS MESSAGES ── */
-  const STATUS_MSGS = [
-    'Connecting...',
-    'Loading platform...',
-    'Almost ready...',
-    'Welcome to Nexora 🚀',
-  ]
+  const [phase,    setPhase]    = useState(0)   // which step is active
+  const [done,     setDone]     = useState([])  // completed step indices
+  const [visible,  setVisible]  = useState([])  // rows that have slid in
+  const [progress, setProgress] = useState(0)
+  const [exiting,  setExiting]  = useState(false)
 
   useEffect(() => {
-    const timers = []
+    const ts = []
 
-    // Step transitions
-    STEP_TIMINGS.forEach((ms, i) => {
-      timers.push(setTimeout(() => {
-        setActiveStep(i)
-        setDoneSteps(prev => (i > 0 ? [...prev, i - 1] : prev))
-        setProgress(PROGRESS_AT[i])
-        setStatusText(STATUS_MSGS[i])
+    /* stagger row appearance */
+    STEPS.forEach((_, i) => {
+      ts.push(setTimeout(() => setVisible(v => [...v, i]), i * 120))
+    })
+
+    /* step transitions */
+    TIMINGS.forEach((ms, i) => {
+      ts.push(setTimeout(() => {
+        setPhase(i)
+        if (i > 0) setDone(d => [...d, i - 1])
+        setProgress(PCT_AT[i])
       }, ms))
     })
 
-    // Final state — mark all done, 100%
-    timers.push(setTimeout(() => {
-      setDoneSteps([0, 1, 2])
+    /* finish */
+    ts.push(setTimeout(() => {
+      setDone([0, 1, 2])
       setProgress(100)
-      setStatusText(STATUS_MSGS[3])
     }, TOTAL_MS))
 
-    // Begin exit animation
-    timers.push(setTimeout(() => {
-      setExiting(true)
-    }, TOTAL_MS + 300))
+    ts.push(setTimeout(() => setExiting(true), TOTAL_MS + 350))
+    ts.push(setTimeout(() => { if (onDone) onDone() }, TOTAL_MS + 950))
 
-    // Call onDone after exit animation completes
-    timers.push(setTimeout(() => {
-      if (onDone) onDone()
-    }, TOTAL_MS + 1000))
-
-    return () => timers.forEach(clearTimeout)
+    return () => ts.forEach(clearTimeout)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const isDone = done.includes
+  const allDone = done.length === STEPS.length
 
   return (
     <div className={`loader-overlay${exiting ? ' loader-exit' : ''}`}>
 
-      {/* Decor */}
-      <div className="loader-grid" />
-      <div className="loader-orb loader-orb-1" />
-      <div className="loader-orb loader-orb-2" />
-      <div className="loader-orb loader-orb-3" />
-
-      {/* ── SECTION 1: LOGO ── */}
-      <div className="loader-section-top">
-        <div className="loader-logo-wrap">
-          <div className="loader-logo-ring" />
-          <div className="loader-logo-ring" />
-          <div className="loader-logo-ring" />
-          <div className="loader-logo-icon">
-            <span className="loader-logo-letter">N</span>
-          </div>
-        </div>
-        <span className="loader-brand-name">NEXORA</span>
-        <span className="loader-tagline">Build · Connect · Launch</span>
-      </div>
-
-      {/* ── SECTION 2: 3 STEPS ── */}
-      <div className="loader-section-mid">
-        {STEPS.map((step, idx) => {
-          const isActive = activeStep === idx && !doneSteps.includes(idx)
-          const isDone   = doneSteps.includes(idx)
-          const isConn   = idx < STEPS.length - 1
+      {/* ── SECTION 1: 3 ROWS ── */}
+      <div className="loader-lines">
+        {STEPS.map((step, i) => {
+          const isActive  = phase === i && !done.includes(i)
+          const isDoneRow = done.includes(i)
+          const isVisible = visible.includes(i)
 
           return (
-            <React.Fragment key={step.id}>
-              <div className={`loader-step${isActive ? ' step-active' : ''}${isDone ? ' step-done' : ''}`}>
-                <div className="loader-step-icon-wrap">
-                  <div className="loader-step-ring" />
-                  <span className="loader-step-icon">{step.icon}</span>
-                  <div className="loader-step-check">✓</div>
-                </div>
-                <span className="loader-step-label">{step.label}</span>
-              </div>
-              {isConn && (
-                <div className={`loader-step-connector${isDone ? ' conn-active' : ''}`} />
-              )}
-            </React.Fragment>
+            <div
+              key={step.num}
+              className={[
+                'loader-line-row',
+                isVisible  ? 'line-visible' : '',
+                isActive   ? 'line-active'  : '',
+                isDoneRow  ? 'line-done'    : '',
+              ].join(' ')}
+            >
+              <span className="loader-line-num">{step.num}</span>
+              <span className="loader-line-dot" />
+              <span className="loader-line-text">{step.text}</span>
+              <span className="loader-line-status">
+                {isDoneRow ? 'done' : isActive ? '···' : ''}
+              </span>
+            </div>
           )
         })}
       </div>
 
-      {/* ── SECTION 3: PROGRESS BAR ── */}
-      <div className="loader-section-bot">
-        <div className="loader-progress-track">
-          <div
-            className="loader-progress-fill"
-            style={{ width: `${progress}%` }}
-          />
-          <div
-            className="loader-progress-glow"
-            style={{ left: `calc(${progress}% - 20px)` }}
-          />
+      {/* ── SECTION 2: PROGRESS TRACK ── */}
+      <div className="loader-track-wrap">
+        <div className="loader-track">
+          <div className="loader-track-fill" style={{ width: `${progress}%` }} />
+          <div className="loader-track-tip"  style={{ left: `${progress}%` }} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="loader-status-text">{statusText}</span>
-          <span className="loader-percent">{progress}%</span>
+
+        {/* ── SECTION 3: META ── */}
+        <div className="loader-meta">
+          <span className="loader-meta-label">
+            {allDone ? 'Complete' : 'Loading'}
+          </span>
+          <span className={`loader-meta-pct${allDone ? ' pct-done' : ''}`}>
+            {progress}%
+          </span>
         </div>
       </div>
 
