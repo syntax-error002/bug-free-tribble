@@ -1,9 +1,16 @@
 import Database from 'better-sqlite3'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DB_PATH = path.join(__dirname, 'nexora.db')
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'nexora.db')
+
+// Auto-create directory of database if it does not exist (crucial for cloud persistent volumes)
+const dbDir = path.dirname(DB_PATH)
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true })
+}
 
 const db = new Database(DB_PATH)
 
